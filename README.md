@@ -1,5 +1,5 @@
 
-# Decision Trees in Scikit Learn
+# Decision Trees in scikit-learn
 
 ## Introduction
 
