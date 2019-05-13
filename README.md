@@ -14,14 +14,15 @@ You will be able to:
 
 ## Import Necessary Libraries
 
-In order to prepare data, train, evaluate and visualize a decision tree , we would need a number of packages in python. Here are the packages that you would normally consider importing before moving on.
+In order to prepare data, train, evaluate and visualize a decision tree , we would need a number of packages in python. Here are the packages that you would normally consider importing before moving on. Run the cell below to import everything we'll need for this lesson. 
+
 
 ```python
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier 
 from sklearn.metrics import accuracy_score, roc_curve, auc
 from sklearn import tree 
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.externals.six import StringIO  
 from IPython.display import Image  
 from sklearn.tree import export_graphviz
@@ -30,18 +31,13 @@ import pandas as pd
 import numpy as np 
 ```
 
-
-```python
-# Code here 
-```
-
 ## Create Dataframe
 
-The play tennis dataset is available in the repo as `tennis.csv`.
-- Import the csv file as a pandas dataframe
+The play tennis dataset is available in the repo as `tennis.csv`.  For this step, we'll start by importing the csv file as a pandas dataframe. Then, since all of our data is currently categorical (recall that each column is in string format), we need to encode them as numbers. For this, we'll use a handy helper objects from sklearn's `preprocessing` module. Since our target, `play`, is in a binary format, we'll use `LabelEncoder`. Since our predictors are not binary, we'll instead use `OneHotEncoder` for them. Finally, we'll print the shape of each piece of transformed data in order to make sure that it all looks correct. 
 - Apply labels to target variable such that `yes=1` and `no=0`
 - Apply one hot encoding to the feature set, creating ten features (outlook x 3, temp x 3, humidity x 2 , wind x 2) 
 - Print the resulting features and check shape
+
 
 ```python
 # Load the dataset
@@ -62,7 +58,7 @@ X = df[['outlook_', 'temp_', 'humidity_', 'windy_']]
 Y = df['play_']
 
 # Instantiate a one hot encoder
-enc = preprocessing.OneHotEncoder()
+enc = OneHotEncoder()
 
 # Fit the feature set X
 enc.fit(X)
@@ -73,10 +69,11 @@ onehotX = enc.transform(X).toarray()
 onehotX, onehotX.shape, X.shape
 ```
 
-
-```python
-# Code here 
-```
+    C:\Users\medio\AppData\Local\Continuum\anaconda3\lib\site-packages\sklearn\preprocessing\_encoders.py:368: FutureWarning: The handling of integer data will change in version 0.22. Currently, the categories are determined based on the range [0, max(values)], while in the future they will be determined based on the unique values.
+    If you want the future behaviour and silence this warning, you can specify "categories='auto'".
+    In case you used a LabelEncoder before this OneHotEncoder to convert the categories to integers, then you can now use the OneHotEncoder directly.
+      warnings.warn(msg, FutureWarning)
+    
 
 
 
@@ -100,40 +97,32 @@ onehotX, onehotX.shape, X.shape
 
 ## Create Test and Training sets
 
-So now we have our data one hot encoded , and ready for training. We shall pass `onehotX` and `Y` to the split function to create a 70/30 train test split. 
-
-```python
-# Create a 70/30 split
-X_train, X_test , y_train,y_test = train_test_split(onehotX, Y, test_size = 0.3, random_state = 100) 
-```
+Our data is now encoded properly, but we're still not ready for training. Before we do anything with a Decision Tree model, we'll want to split our data into **_training_** and **_testing_** sets.  We'll accomplish this by passing `onehotX` and `Y` to the `train_test_split` function to create a 70/30 train test split. 
 
 
 ```python
-# Code here 
+X_train, X_test , y_train,y_test = train_test_split(onehotX, Y, test_size = 0.3, random_state = 42) 
 ```
 
 ## Train the Decision Tree 
 
-Scikit learn offers uniform interface for training classifier. We first create an instance of the classifier with any parameter values, fit our data to the model using `.fit()` and make predictions with `X_test` using `.predict()`. 
+One awesome feature of scikit-learn is the uniformity of its interfaces for every classifier--no matter what classifier we're using, we can expect it to have the same important methods such as `.fit()` and `.predict()`. This means that this next part will probably feel a little familiar.
+
+We'll first create an instance of the classifier with any parameter values, and then we'll fit our data to the model using `.fit()` and make predictions with `X_test` using `.predict()`. 
+
 
 ```python
-# Train the classifier and make predictions
 clf= DecisionTreeClassifier(criterion='entropy')
 clf.fit(X_train,y_train) 
 y_pred = clf.predict(X_test)
 ```
 
-
-```python
-# Code here 
-```
-
 ## Evaluate the Predictive Performance
 
-So now we can go on and see how accurate our predictions are. We can use a simple accuracy measure , AUC , Confusion matrix, or all of them. This step is performed in the exactly the same manner , doesnt matter which  classifier you are dealing with. 
+Now that we have a trained model and we've generated some predictions, we cango on and see how accurate our predictions are. We can use a simple accuracy measure, AUC, a Confusion matrix, or all of them. This step is performed in the exactly the same manner , doesnt matter which  classifier you are dealing with. 
+
 
 ```python
-# Calculate Accuracy 
 acc = accuracy_score(y_test,y_pred) * 100
 print("Accuracy is :{0}".format(acc))
 
@@ -146,14 +135,6 @@ print("\nAUC is :{0}".format(round(roc_auc,2)))
 print('\nConfusion Matrix')
 print('----------------')
 pd.crosstab(y_test, y_pred, rownames=['True'], colnames=['Predicted'], margins=True)
-
-
-```
-
-
-```python
-# Code here 
-
 ```
 
     Accuracy is :60.0
@@ -162,104 +143,7 @@ pd.crosstab(y_test, y_pred, rownames=['True'], colnames=['Predicted'], margins=T
     
     Confusion Matrix
     ----------------
-
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th>Predicted</th>
-      <th>0</th>
-      <th>1</th>
-      <th>All</th>
-    </tr>
-    <tr>
-      <th>True</th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>1</td>
-      <td>1</td>
-      <td>2</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>1</td>
-      <td>2</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>All</th>
-      <td>2</td>
-      <td>3</td>
-      <td>5</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
-This looks a bit weird. We saw a perfect split and cleaned up all the data in our example earlier, so we should be able to see a 100% accuracy. Any ideas ?? Well here, we have split the data , and 30% of the data is not shown to the classifier. This takes away a lot of information from this tiny dataset and hence we can not hit 100% accuracy any more. 
-
-We can experiment with training on complete dataset , and then making predictions on test set (which will be pointless as test set is a part of complete data, so that means our classifier has already learned that information). Nevertheless, here it is , just to prove a point really. 
-
-```python
-# train another classifier with complete dataset
-clf2= DecisionTreeClassifier(criterion='entropy')
-
-clf2.fit(onehotX,Y) # passing in data pre-split
-y_pred = clf2.predict(X_test)
-
-# Calculate Accuracy 
-acc = accuracy_score(y_test,y_pred) * 100
-print("Accuracy is :{0}".format(acc))
-
-# Check the AUC for predictions
-false_positive_rate, true_positive_rate, thresholds = roc_curve(y_test, y_pred)
-roc_auc = auc(false_positive_rate, true_positive_rate)
-print("AUC is :{0}".format(roc_auc))
-
-print('\nConfusion Matrix')
-print('----------------')
-pd.crosstab(y_test, y_pred, rownames=['True'], colnames=['Predicted'], margins=True)
-
-
-```
-
-
-```python
-# Code here 
-
-```
-
-    Accuracy is :100.0
-    AUC is :1.0
     
-    Confusion Matrix
-    ----------------
-
 
 
 
@@ -296,14 +180,14 @@ pd.crosstab(y_test, y_pred, rownames=['True'], colnames=['Predicted'], margins=T
   <tbody>
     <tr>
       <th>0</th>
-      <td>2</td>
-      <td>0</td>
+      <td>1</td>
+      <td>1</td>
       <td>2</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0</td>
-      <td>3</td>
+      <td>1</td>
+      <td>2</td>
       <td>3</td>
     </tr>
     <tr>
@@ -315,53 +199,6 @@ pd.crosstab(y_test, y_pred, rownames=['True'], colnames=['Predicted'], margins=T
   </tbody>
 </table>
 </div>
-
-
-
-There you have it, a perfect classification. Well it's actually over-fitting and such results are never possible in real world scenarios. 
-
-## Visualize the Decision Tree
-
-So now we can visualize our decision tree. We use the `graph_viz` library to get the visual output. Do install graphviz if you haven't done so already. 
-
-```python
-# Visualize the decision tree using graph viz library 
-dot_data = StringIO()
-export_graphviz(clf, out_file=dot_data, filled=True, rounded=True,special_characters=True)
-graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
-Image(graph.create_png())
-```
-
-
-```python
-# Code here 
-```
-
-
-
-
-![png](index_files/index_15_0.png)
-
-
-
-Remember this tree looks different from the tree we manually created earlier , as we are using a different set of derived features to train this tree. The information content of one hot encoded data remains exactly the same as raw data. We can also visualize the tree we created with complete dataset  as shown below. You will see that extra information in complete dataset allows tree to grow new branches and nodes and thus getting a 100% accuracy.
-```python
-# Visualize the tree trained from complete dataset
-dot_data = StringIO()
-export_graphviz(clf2, out_file=dot_data, filled=True, rounded=True,special_characters=True)
-graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
-Image(graph.create_png())
-```
-
-
-```python
-# Code here 
-```
-
-
-
-
-![png](index_files/index_17_0.png)
 
 
 
