@@ -3,7 +3,7 @@
 
 ## Introduction
 
-In this lesson, we shall cover decision trees (for classification) in python, using scikit-learn and pandas. The emphasis will be on the basics and understanding the resulting decision tree. Scikit-Learn provides a consisitent interface for running different classifiers/regressors. For classification tasks, evaluation is performed using the same measures as we have seen before. Let's look at our example from earlier lessons and grow a tree to find our solution. 
+In this lesson, we shall cover decision trees (for classification) in python, using scikit-learn and pandas. The emphasis will be on the basics and understanding the resulting decision tree. Scikit-Learn provides a consistent interface for running different classifiers/regressors. For classification tasks, evaluation is performed using the same measures as we have seen before. Let's look at our example from earlier lessons and grow a tree to find our solution. 
 
 ## Objectives
 You will be able to:
@@ -73,7 +73,7 @@ onehotX, onehotX.shape, X.shape
     If you want the future behaviour and silence this warning, you can specify "categories='auto'".
     In case you used a LabelEncoder before this OneHotEncoder to convert the categories to integers, then you can now use the OneHotEncoder directly.
       warnings.warn(msg, FutureWarning)
-    
+
 
 
 
@@ -119,89 +119,8 @@ y_pred = clf.predict(X_test)
 
 ## Evaluate the Predictive Performance
 
-Now that we have a trained model and we've generated some predictions, we cango on and see how accurate our predictions are. We can use a simple accuracy measure, AUC, a Confusion matrix, or all of them. This step is performed in the exactly the same manner , doesnt matter which  classifier you are dealing with. 
-
-
-```python
-acc = accuracy_score(y_test,y_pred) * 100
-print("Accuracy is :{0}".format(acc))
-
-# Check the AUC for predictions
-false_positive_rate, true_positive_rate, thresholds = roc_curve(y_test, y_pred)
-roc_auc = auc(false_positive_rate, true_positive_rate)
-print("\nAUC is :{0}".format(round(roc_auc,2)))
-
-# Create and print a confusion matrix 
-print('\nConfusion Matrix')
-print('----------------')
-pd.crosstab(y_test, y_pred, rownames=['True'], colnames=['Predicted'], margins=True)
-```
-
-    Accuracy is :60.0
-    
-    AUC is :0.58
-    
-    Confusion Matrix
-    ----------------
-    
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th>Predicted</th>
-      <th>0</th>
-      <th>1</th>
-      <th>All</th>
-    </tr>
-    <tr>
-      <th>True</th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>1</td>
-      <td>1</td>
-      <td>2</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>1</td>
-      <td>2</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>All</th>
-      <td>2</td>
-      <td>3</td>
-      <td>5</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
+Now that we have a trained model and we've generated some predictions, we can go on and see how accurate our predictions are. We can use a simple accuracy measure, AUC, a Confusion matrix, or all of them. This step is performed in the exactly the same manner , doesn't matter which  classifier you are dealing with. 
 
 ## Summary 
 
-In this lesson, we looked at how to grow a decision tree in scikitlearn and python. We looked at different stages of data processing, training and evaluation that you would normally come across while growing a tree or training any other such classifier. We shall now move to a lab, where you will be required to build a tree for a given problem, following the steps shown in this lesson. 
+In this lesson, we looked at how to grow a decision tree in scikit-learn and python. We looked at different stages of data processing, training and evaluation that you would normally come across while growing a tree or training any other such classifier. We shall now move to a lab, where you will be required to build a tree for a given problem, following the steps shown in this lesson. 
