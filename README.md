@@ -22,87 +22,234 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier 
 from sklearn.metrics import accuracy_score, roc_curve, auc
 from sklearn import tree 
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
-from sklearn.externals.six import StringIO  
+from sklearn.preprocessing import OneHotEncoder
 from IPython.display import Image  
 from sklearn.tree import export_graphviz
-import pydotplus
 import pandas as pd 
 import numpy as np 
 ```
 
 ## Create Dataframe
 
-The play tennis dataset is available in the repo as `tennis.csv`.  For this step, we'll start by importing the csv file as a pandas dataframe. Then, since all of our data is currently categorical (recall that each column is in string format), we need to encode them as numbers. For this, we'll use a handy helper objects from sklearn's `preprocessing` module. Since our target, `play`, is in a binary format, we'll use `LabelEncoder`. Since our predictors are not binary, we'll instead use `OneHotEncoder` for them. Finally, we'll print the shape of each piece of transformed data in order to make sure that it all looks correct. 
-- Apply labels to target variable such that `yes=1` and `no=0`
-- Apply one hot encoding to the feature set, creating ten features (outlook x 3, temp x 3, humidity x 2 , wind x 2) 
-- Print the resulting features and check shape
+The play tennis dataset is available in the repo as `tennis.csv`.  For this step, we'll start by importing the csv file as a pandas dataframe.
 
 
 ```python
 # Load the dataset
-df = pd.read_csv('tennis.csv') 
+df = pd.read_csv('tennis.csv')
 
-# Create label encoder instance
-lb = LabelEncoder() 
-
-# Create Numerical labels for classes
-df['play_'] = lb.fit_transform(df['play'] ) 
-df['outlook_'] = lb.fit_transform(df['outlook']) 
-df['temp_'] = lb.fit_transform(df['temp'] ) 
-df['humidity_'] = lb.fit_transform(df['humidity'] ) 
-df['windy_'] = lb.fit_transform(df['windy'] ) 
-
-# Split features and target variable
-X = df[['outlook_', 'temp_', 'humidity_', 'windy_']] 
-Y = df['play_']
-
-# Instantiate a one hot encoder
-enc = OneHotEncoder()
-
-# Fit the feature set X
-enc.fit(X)
-
-# Transform X to onehot array 
-onehotX = enc.transform(X).toarray()
-
-onehotX, onehotX.shape, X.shape
+df.head()
 ```
 
-    C:\Users\medio\AppData\Local\Continuum\anaconda3\lib\site-packages\sklearn\preprocessing\_encoders.py:368: FutureWarning: The handling of integer data will change in version 0.22. Currently, the categories are determined based on the range [0, max(values)], while in the future they will be determined based on the unique values.
-    If you want the future behaviour and silence this warning, you can specify "categories='auto'".
-    In case you used a LabelEncoder before this OneHotEncoder to convert the categories to integers, then you can now use the OneHotEncoder directly.
-      warnings.warn(msg, FutureWarning)
 
 
 
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
 
-    (array([[0., 0., 1., 0., 1., 0., 1., 0., 1., 0.],
-            [0., 0., 1., 0., 1., 0., 1., 0., 0., 1.],
-            [1., 0., 0., 0., 1., 0., 1., 0., 1., 0.],
-            [0., 1., 0., 0., 0., 1., 1., 0., 1., 0.],
-            [0., 1., 0., 1., 0., 0., 0., 1., 1., 0.],
-            [0., 1., 0., 1., 0., 0., 0., 1., 0., 1.],
-            [1., 0., 0., 1., 0., 0., 0., 1., 0., 1.],
-            [0., 0., 1., 0., 0., 1., 1., 0., 1., 0.],
-            [0., 0., 1., 1., 0., 0., 0., 1., 1., 0.],
-            [0., 1., 0., 0., 0., 1., 0., 1., 1., 0.],
-            [0., 0., 1., 0., 0., 1., 0., 1., 0., 1.],
-            [1., 0., 0., 0., 0., 1., 1., 0., 0., 1.],
-            [1., 0., 0., 0., 1., 0., 0., 1., 1., 0.],
-            [0., 1., 0., 0., 0., 1., 1., 0., 0., 1.]]), (14, 10), (14, 4))
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>outlook</th>
+      <th>temp</th>
+      <th>humidity</th>
+      <th>windy</th>
+      <th>play</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>sunny</td>
+      <td>hot</td>
+      <td>high</td>
+      <td>False</td>
+      <td>no</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>sunny</td>
+      <td>hot</td>
+      <td>high</td>
+      <td>True</td>
+      <td>no</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>overcast</td>
+      <td>hot</td>
+      <td>high</td>
+      <td>False</td>
+      <td>yes</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>rainy</td>
+      <td>mild</td>
+      <td>high</td>
+      <td>False</td>
+      <td>yes</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>rainy</td>
+      <td>cool</td>
+      <td>normal</td>
+      <td>False</td>
+      <td>yes</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 
 
 
 ## Create Test and Training sets
 
-Our data is now encoded properly, but we're still not ready for training. Before we do anything with a Decision Tree model, we'll want to split our data into **_training_** and **_testing_** sets.  We'll accomplish this by passing `onehotX` and `Y` to the `train_test_split` function to create a 70/30 train test split. 
+Before we do anything we'll want to split our data into **_training_** and **_testing_** sets.  We'll accomplish this by first splitting the dataframe into features (`X`) and target (`y`), then passing `X` and `y` to the `train_test_split` function to create a 70/30 train test split. 
 
 
 ```python
-X_train, X_test , y_train,y_test = train_test_split(onehotX, Y, test_size = 0.3, random_state = 42) 
+X = df.loc[:, ['outlook', 'temp', 'humidity', 'windy']]
+y = df.loc[:, 'play']
+
+X_train, X_test , y_train,y_test = train_test_split(X, y, test_size = 0.3, random_state = 42)
 ```
+
+## Encode Categorical Data as numbers
+
+Since all of our data is currently categorical (recall that each column is in string format), we need to encode them as numbers. For this, we'll use a handy helper object from sklearn's `preprocessing` module called `OneHotEncoder`.
+
+
+```python
+#One hot encode the training data and show the resulting dataframe with proper column names
+ohe = OneHotEncoder()
+
+ohe.fit(X_train)
+X_train_ohe = ohe.transform(X_train).toarray()
+
+#Creating this dataframe is not necessary its only to show the result of the ohe
+ohe_df = pd.DataFrame(X_train_ohe, columns=ohe.get_feature_names(X_train.columns))
+
+ohe_df.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>outlook_overcast</th>
+      <th>outlook_rainy</th>
+      <th>outlook_sunny</th>
+      <th>temp_cool</th>
+      <th>temp_hot</th>
+      <th>temp_mild</th>
+      <th>humidity_high</th>
+      <th>humidity_normal</th>
+      <th>windy_False</th>
+      <th>windy_True</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
 
 ## Train the Decision Tree 
 
@@ -112,9 +259,13 @@ We'll first create an instance of the classifier with any parameter values, and 
 
 
 ```python
-clf= DecisionTreeClassifier(criterion='entropy')
-clf.fit(X_train,y_train) 
-y_pred = clf.predict(X_test)
+#Create the classifier, fit it on the training data and make predictions on the test set
+clf = DecisionTreeClassifier(criterion='entropy')
+
+clf.fit(X_train_ohe,y_train)
+
+X_test_ohe = ohe.transform(X_test)
+y_preds = clf.predict(X_test_ohe)
 ```
 
 ## Evaluate the Predictive Performance
