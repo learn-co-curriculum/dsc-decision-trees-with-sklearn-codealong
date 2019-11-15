@@ -288,7 +288,8 @@ You can see what rules the tree learned by plotting this decision tree. To do th
 # Create DOT data
 dot_data = export_graphviz(clf, out_file=None, 
                            feature_names=ohe_df.columns,  
-                           class_names=np.unique(y).astype('str'))
+                           class_names=np.unique(y).astype('str'), 
+                           filled=True, rounded=True, special_characters=True)
 
 # Draw graph
 graph = graph_from_dot_data(dot_data)  
