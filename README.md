@@ -3,35 +3,35 @@
 
 ## Introduction
 
-In this lesson, we shall cover decision trees (for classification) in python, using scikit-learn and pandas. The emphasis will be on the basics and understanding the resulting decision tree. Scikit-Learn provides a consistent interface for running different classifiers/regressors. For classification tasks, evaluation is performed using the same measures as we have seen before. Let's look at our example from earlier lessons and grow a tree to find our solution. 
+In this lesson, we will cover decision trees (for classification) in Python, using scikit-learn and pandas. The emphasis will be on the basics and understanding the resulting decision tree. Scikit-learn provides a consistent interface for running different classifiers/regressors. For classification tasks, evaluation is performed using the same measures as we have seen before. Let's look at our example from earlier lessons and grow a tree to find our solution. 
 
-## Objectives
+## Objectives 
+
 You will be able to:
 
-- Using `pandas` to prepare the data for the scikit-learn decision tree algorithm
-- Train the classifier with a training dataset and evaluate performance using different measures
-- Visualize the decision tree and interpret the visualization
+- Use scikit-learn to fit a decision tree classification model 
+- Plot a decision tree using Python 
 
-## Import Necessary Libraries
 
-In order to prepare data, train, evaluate and visualize a decision tree , we would need a number of packages in python. Here are the packages that you would normally consider importing before moving on. Run the cell below to import everything we'll need for this lesson. 
+## Import necessary modules and data
+
+In order to prepare data, train, evaluate, and visualize a decision tree, we will make use of several modules in the scikit-learn package. Run the cell below to import everything we'll need for this lesson: 
 
 
 ```python
+import numpy as np 
+import pandas as pd 
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier 
-from sklearn.metrics import accuracy_score, roc_curve, auc
-from sklearn import tree 
+from sklearn.metrics import accuracy_score
+from sklearn.tree import export_graphviz
 from sklearn.preprocessing import OneHotEncoder
 from IPython.display import Image  
 from sklearn.tree import export_graphviz
-import pandas as pd 
-import numpy as np 
+from pydotplus import graph_from_dot_data
 ```
 
-## Create Dataframe
-
-The play tennis dataset is available in the repo as `tennis.csv`.  For this step, we'll start by importing the csv file as a pandas dataframe.
+The play tennis dataset is available in the repo as `'tennis.csv'`. For this step, we'll start by importing the csv file as a pandas DataFrame.
 
 
 ```python
@@ -116,31 +116,31 @@ df.head()
 
 
 
-## Create Test and Training sets
+## Create training and test sets
 
-Before we do anything we'll want to split our data into **_training_** and **_testing_** sets.  We'll accomplish this by first splitting the dataframe into features (`X`) and target (`y`), then passing `X` and `y` to the `train_test_split` function to create a 70/30 train test split. 
+Before we do anything we'll want to split our data into **_training_** and **_test_** sets.  We'll accomplish this by first splitting the DataFrame into features (`X`) and target (`y`), then passing `X` and `y` to the `train_test_split()` function to create a 70/30 train test split.
 
 
 ```python
 X = df.loc[:, ['outlook', 'temp', 'humidity', 'windy']]
 y = df.loc[:, 'play']
 
-X_train, X_test , y_train,y_test = train_test_split(X, y, test_size = 0.3, random_state = 42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state = 42)
 ```
 
-## Encode Categorical Data as numbers
+## Encode categorical data as numbers
 
 Since all of our data is currently categorical (recall that each column is in string format), we need to encode them as numbers. For this, we'll use a handy helper object from sklearn's `preprocessing` module called `OneHotEncoder`.
 
 
 ```python
-#One hot encode the training data and show the resulting dataframe with proper column names
+# One-hot encode the training data and show the resulting DataFrame with proper column names
 ohe = OneHotEncoder()
 
 ohe.fit(X_train)
 X_train_ohe = ohe.transform(X_train).toarray()
 
-#Creating this dataframe is not necessary its only to show the result of the ohe
+# Creating this DataFrame is not necessary its only to show the result of the ohe
 ohe_df = pd.DataFrame(X_train_ohe, columns=ohe.get_feature_names(X_train.columns))
 
 ohe_df.head()
@@ -251,27 +251,74 @@ ohe_df.head()
 
 
 
-## Train the Decision Tree 
+## Train the decision tree 
 
-One awesome feature of scikit-learn is the uniformity of its interfaces for every classifier--no matter what classifier we're using, we can expect it to have the same important methods such as `.fit()` and `.predict()`. This means that this next part will probably feel a little familiar.
+One awesome feature of scikit-learn is the uniformity of its interfaces for every classifier -- no matter what classifier we're using, we can expect it to have the same important methods such as `.fit()` and `.predict()`. This means that this next part should feel familiar.
 
-We'll first create an instance of the classifier with any parameter values, and then we'll fit our data to the model using `.fit()` and make predictions with `X_test` using `.predict()`. 
+We'll first create an instance of the classifier with any parameter values, and then we'll fit our data to the model using `.fit()`. 
 
 
 ```python
-#Create the classifier, fit it on the training data and make predictions on the test set
+# Create the classifier, fit it on the training data and make predictions on the test set
 clf = DecisionTreeClassifier(criterion='entropy')
 
-clf.fit(X_train_ohe,y_train)
-
-X_test_ohe = ohe.transform(X_test)
-y_preds = clf.predict(X_test_ohe)
+clf.fit(X_train_ohe, y_train)
 ```
 
-## Evaluate the Predictive Performance
 
-Now that we have a trained model and we've generated some predictions, we can go on and see how accurate our predictions are. We can use a simple accuracy measure, AUC, a Confusion matrix, or all of them. This step is performed in the exactly the same manner , doesn't matter which  classifier you are dealing with. 
+
+
+    DecisionTreeClassifier(class_weight=None, criterion='entropy', max_depth=None,
+                           max_features=None, max_leaf_nodes=None,
+                           min_impurity_decrease=0.0, min_impurity_split=None,
+                           min_samples_leaf=1, min_samples_split=2,
+                           min_weight_fraction_leaf=0.0, presort=False,
+                           random_state=None, splitter='best')
+
+
+
+## Plot the decision tree 
+
+You can see what rules the tree learned by plotting this decision tree. To do this, you need to use additional packages such as `pytdotplus`. 
+
+> **Note:** If you are run into errors while generating the plot, you probably need to install `python-graphviz` in your machine using `conda install python-graphviz`. 
+
+
+```python
+# Create DOT data
+dot_data = export_graphviz(clf, out_file=None, 
+                           feature_names=ohe_df.columns,  
+                           class_names=np.unique(y).astype('str'))
+
+# Draw graph
+graph = graph_from_dot_data(dot_data)  
+
+# Show graph
+Image(graph.create_png())
+```
+
+
+
+
+![png](index_files/index_11_0.png)
+
+
+
+## Evaluate the predictive performance
+
+Now that we have a trained model, we can generate some predictions, and go on to see how accurate our predictions are. We can use a simple accuracy measure, AUC, a confusion matrix, or all of them. This step is performed in the exactly the same manner, doesn't matter which classifier you are dealing with. 
+
+
+```python
+X_test_ohe = ohe.transform(X_test)
+y_preds = clf.predict(X_test_ohe)
+
+print('Accuracy: ', accuracy_score(y_test, y_preds))
+```
+
+    Accuracy:  0.6
+
 
 ## Summary 
 
-In this lesson, we looked at how to grow a decision tree in scikit-learn and python. We looked at different stages of data processing, training and evaluation that you would normally come across while growing a tree or training any other such classifier. We shall now move to a lab, where you will be required to build a tree for a given problem, following the steps shown in this lesson. 
+In this lesson, we looked at how to grow a decision tree using `scikit-learn`. We looked at different stages of data processing, training, and evaluation that you would normally come across while growing a tree or training any other such classifier. We shall now move to a lab, where you will be required to build a tree for a given problem, following the steps shown in this lesson. 
