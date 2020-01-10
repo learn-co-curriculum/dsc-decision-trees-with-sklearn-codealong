@@ -1,4 +1,3 @@
-
 # Building Trees using scikit-learn
 
 ## Introduction
@@ -118,7 +117,7 @@ df.head()
 
 ## Create training and test sets
 
-Before we do anything we'll want to split our data into **_training_** and **_test_** sets.  We'll accomplish this by first splitting the DataFrame into features (`X`) and target (`y`), then passing `X` and `y` to the `train_test_split()` function to create a 70/30 train test split.
+Before we do anything we'll want to split our data into **_training_** and **_test_** sets.  We'll accomplish this by first splitting the DataFrame into features (`X`) and target (`y`), then passing `X` and `y` to the `train_test_split()` function to split the data so that 70% of it is in the training set, and 30% of it is in the testing set.
 
 
 ```python
@@ -255,7 +254,7 @@ ohe_df.head()
 
 One awesome feature of scikit-learn is the uniformity of its interfaces for every classifier -- no matter what classifier we're using, we can expect it to have the same important methods such as `.fit()` and `.predict()`. This means that this next part should feel familiar.
 
-We'll first create an instance of the classifier with any parameter values, and then we'll fit our data to the model using `.fit()`. 
+We'll first create an instance of the classifier with any parameter values we have, and then we'll fit our data to the model using `.fit()`. 
 
 
 ```python
@@ -307,7 +306,7 @@ Image(graph.create_png())
 
 ## Evaluate the predictive performance
 
-Now that we have a trained model, we can generate some predictions, and go on to see how accurate our predictions are. We can use a simple accuracy measure, AUC, a confusion matrix, or all of them. This step is performed in the exactly the same manner, doesn't matter which classifier you are dealing with. 
+Now that we have a trained model, we can generate some predictions, and go on to see how accurate our predictions are. We can use a simple accuracy measure, AUC, a confusion matrix, or all of them. This step is performed in the exactly the same manner, so it doesn't matter which classifier you are dealing with. 
 
 
 ```python
