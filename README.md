@@ -1,4 +1,3 @@
-
 # Building Trees using scikit-learn
 
 ## Introduction
@@ -139,7 +138,7 @@ ohe.fit(X_train)
 X_train_ohe = ohe.transform(X_train).toarray()
 
 # Creating this DataFrame is not necessary its only to show the result of the ohe
-ohe_df = pd.DataFrame(X_train_ohe, columns=ohe.get_feature_names(X_train.columns))
+ohe_df = pd.DataFrame(X_train_ohe, columns=ohe.get_feature_names_out(X_train.columns))
 
 ohe_df.head()
 ```
@@ -290,7 +289,9 @@ plt.show()
 ```
 
 
+    
 ![png](index_files/index_11_0.png)
+    
 
 
 ## Evaluate the predictive performance
